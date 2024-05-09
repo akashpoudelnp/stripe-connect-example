@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Contracts\IStripe;
+use App\Facades\Stripe;
 use Stripe\Account;
+use Stripe\Checkout\Session;
 use Stripe\Price;
 use Stripe\Product;
 use Stripe\StripeClient;
@@ -14,12 +16,22 @@ class StripeService implements IStripe
 
     public function __construct()
     {
-        $this->client = new StripeClient(config('services.stripe.secret'));
+        $this->client = new StripeClient(config('stripe.keys.secret'));
     }
 
     public function createConnectAccount(array $data = []): Account
     {
         return $this->client->accounts->create($data);
+    }
+
+    public function retrieveConnectAccount(string $accountId): Account
+    {
+        return $this->client->accounts->retrieve($accountId);
+    }
+
+    public function retrieveCheckoutSession(string $checkout_session_id): Session
+    {
+        return Stripe::getClient()->checkout->sessions->retrieve($checkout_session_id);
     }
 
     public function createLink(string $accountId, string $returnUrl, string $refreshUrl)

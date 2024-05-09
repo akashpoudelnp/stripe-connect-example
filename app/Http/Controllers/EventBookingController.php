@@ -51,7 +51,7 @@ class EventBookingController extends Controller
             return redirect()->route('events.bookings.payment', $booking);
         }
 
-        $checkout_session = Stripe::getClient()->checkout->sessions->retrieve($booking->checkout_session_id);
+        $checkout_session = Stripe::retrieveCheckoutSession($booking->checkout_session_id);
 
         if ($checkout_session->payment_status !== 'paid') {
             return redirect()->route('events.bookings.payment', $booking);
@@ -68,10 +68,9 @@ class EventBookingController extends Controller
     {
         $checkout_session_id = $request->query('checkout_session_id');
 
-
         $booking = Booking::where('checkout_session_id', $checkout_session_id)->firstOrFail();
 
-        $checkout_session = Stripe::getClient()->checkout->sessions->retrieve($checkout_session_id);
+        $checkout_session = Stripe::retrieveCheckoutSession($checkout_session_id);
 
         if ($checkout_session->payment_status !== 'paid') {
             return redirect()->route('events.bookings.payment', $booking);

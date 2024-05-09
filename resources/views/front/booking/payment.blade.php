@@ -9,7 +9,7 @@
     </div>
 
     <script>
-        const stripe = Stripe("{{config('services.stripe.public')}}");
+        const stripe = Stripe("{{config('stripe.keys.public')}}");
         const csrf_token = "{{csrf_token()}}";
         const initiatePaymentURL = @json(route('events.bookings.payment.initiate', $booking));
         initialize();

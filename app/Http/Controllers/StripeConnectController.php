@@ -2,48 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Stripe;
 use App\Models\Client;
-use Exception;
 
 class StripeConnectController extends Controller
 {
     public function connect(Client $client)
     {
-        if (!$client->stripe_account_id) {
-            $account = Stripe::createConnectAccount();
+        $connectLink = $client->initiateStripeConnectOnboarding(
+            returnUrl: route('stripe.connect.return', $client),
+            refreshUrl: route('stripe.connect.refresh', $client),
+        );
 
-            $client->update([
-                'stripe_account_id' => $account->id,
-            ]);
-        }
-
-        $link = Stripe::createLink($client->stripe_account_id, route('stripe.connect.return', $client), route('stripe.connect.refresh', $client));
-
-        if ($link instanceof Exception) {
-            dd($link);
-        }
-
-        return redirect($link->url);
+        return redirect($connectLink);
     }
 
     public function return(Client $client)
     {
-        $accountDetails = Stripe::getClient()->accounts->retrieve($client->stripe_account_id);
-
-        if ($accountDetails->details_submitted) {
-            $client->update([
-                'stripe_account_status' => $accountDetails->details_submitted ? 'connected' : 'pending',
-            ]);
-        }
+        $client->checkAndUpdateOnboardingReturn();
 
         return redirect()->route('front.index');
     }
 
     public function refresh(Client $client)
     {
-        $link = Stripe::createLink($client->stripe_account_id, route('stripe.connect.return', $client), route('stripe.connect.refresh', $client));
-
-        return redirect($link->url);
+        return redirect($client->getStripeConnectRefreshUrl(
+            returnUrl: route('stripe.connect.return', $client),
+            refreshUrl: route('stripe.connect.refresh', $client),
+        ));
     }
 }
