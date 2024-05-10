@@ -42,13 +42,21 @@ class StripeService implements IStripe
     public function refundPayment(string $paymentIntent, string $connectedAccount = null)
     {
         $options = [];
+        $payload = [
+            'payment_intent'         => $paymentIntent,
+            'refund_application_fee' => true,
+            'reverse_transfer'       => true,
+        ];
+
+        // This means its a direct charge,
+        // In direct charge we need to pass the connected account id for every actions
+        // Also in direct charge we don't want to reverse the transfer as its a direct transfer
         if ($connectedAccount) {
             $options['stripe_account'] = $connectedAccount;
+            $payload['reverse_transfer'] = false;
         }
 
-        return $this->client->refunds->create([
-            'payment_intent' => $paymentIntent,
-        ], $options);
+        return $this->client->refunds->create($payload, $options);
     }
 
     public function createLink(string $accountId, string $returnUrl, string $refreshUrl)
