@@ -9,7 +9,17 @@
     </div>
 
     <script>
-        const stripe = Stripe("{{config('stripe.keys.public')}}");
+        const charge_type = @json(config('stripe.charge_type'));
+        let stripe;
+
+        if (charge_type === 'direct') {
+            stripe = Stripe("{{config('stripe.keys.public')}}", {
+                stripeAccount: @json($booking->event->client->stripe_account_id),
+            });
+        } else {
+            stripe = Stripe("{{config('stripe.keys.public')}}");
+        }
+
         const csrf_token = "{{csrf_token()}}";
         const initiatePaymentURL = @json(route('events.bookings.payment.initiate', $booking));
         initialize();

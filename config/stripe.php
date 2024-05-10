@@ -15,4 +15,9 @@ return [
     'fees' => [
         'application_fee' => env('STRIPE_APPLICATION_FEE', 100),
     ],
+
+    /*
+     * The charge type to use
+     */
+    'charge_type' => env('STRIPE_CHARGE_TYPE', 'direct'),
 ];

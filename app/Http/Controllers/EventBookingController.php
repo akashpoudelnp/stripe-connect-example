@@ -51,7 +51,11 @@ class EventBookingController extends Controller
 
         $booking = Booking::where('checkout_session_id', $checkout_session_id)->firstOrFail();
 
-        $checkout_session = Stripe::retrieveCheckoutSession($checkout_session_id);
+        if (config('stripe.charge_type') === 'direct') {
+            $checkout_session = Stripe::retrieveCheckoutSession($checkout_session_id, $booking->event->client->stripe_account_id);
+        } else {
+            $checkout_session = Stripe::retrieveCheckoutSession($checkout_session_id);
+        }
 
         if ($checkout_session->payment_status !== 'paid') {
             return redirect()->route('events.bookings.payment', $booking);

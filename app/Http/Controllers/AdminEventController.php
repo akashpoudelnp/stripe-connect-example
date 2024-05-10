@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Stripe;
 use App\Models\Client;
 use App\Models\Event;
 use Illuminate\Http\Request;
@@ -36,27 +35,6 @@ class AdminEventController extends Controller
 
         $event = Event::create($data);
 
-        $stripeProduct = Stripe::createProduct([
-            'name'        => $event->name,
-            'description' => $event->description,
-            'metadata'    => [
-                'event_id' => $event->id,
-                'date'     => $event->date,
-                'location' => $event->location,
-            ]
-        ]);
-
-        $stripePrice = Stripe::createPrice([
-            'product'     => $stripeProduct->id,
-            'unit_amount' => $event->ticket_price * 100,
-            'currency'    => 'usd',
-        ]);
-
-        $event->update([
-            'stripe_product_id' => $stripeProduct->id,
-            'stripe_price_id'   => $stripePrice->id,
-        ]);
-
         return redirect()->route('admin.events.index');
     }
 
@@ -77,25 +55,6 @@ class AdminEventController extends Controller
             'location'     => 'required',
             'client_id'    => 'required',
         ]);
-
-        if ($event->ticket_price !== floatval($data['ticket_price'])) {
-            Stripe::updatePrice($event->stripe_price_id, [
-                'active' => false,
-            ]);
-
-            $data['stripe_price_id'] = Stripe::createPrice([
-                'product'     => $event->stripe_product_id,
-                'unit_amount' => $data['ticket_price'] * 100,
-                'currency'    => 'usd',
-            ])->id;
-        }
-
-        if ($event->name !== $data['name'] || $event->description !== $data['description']) {
-            Stripe::updateProduct($event->stripe_product_id, [
-                'name'        => $data['name'],
-                'description' => $data['description'],
-            ]);
-        }
 
         $event->update($data);
 

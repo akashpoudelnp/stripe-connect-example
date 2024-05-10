@@ -29,9 +29,16 @@ class StripeService implements IStripe
         return $this->client->accounts->retrieve($accountId);
     }
 
-    public function retrieveCheckoutSession(string $checkout_session_id): Session
+    public function retrieveCheckoutSession(string $checkout_session_id, string $connected_account_id = null): Session
     {
-        return Stripe::getClient()->checkout->sessions->retrieve($checkout_session_id);
+        // If there is connected account id then it is a direct charge
+        if (!$connected_account_id) {
+            return Stripe::getClient()->checkout->sessions->retrieve($checkout_session_id);
+        }
+
+        return Stripe::getClient()->checkout->sessions->retrieve($checkout_session_id, [], [
+            'stripe_account' => $connected_account_id
+        ]);
     }
 
     public function createLink(string $accountId, string $returnUrl, string $refreshUrl)
