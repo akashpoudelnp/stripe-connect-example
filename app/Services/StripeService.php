@@ -6,8 +6,6 @@ use App\Contracts\IStripe;
 use App\Facades\Stripe;
 use Stripe\Account;
 use Stripe\Checkout\Session;
-use Stripe\Price;
-use Stripe\Product;
 use Stripe\StripeClient;
 
 class StripeService implements IStripe
@@ -41,6 +39,18 @@ class StripeService implements IStripe
         ]);
     }
 
+    public function refundPayment(string $paymentIntent, string $connectedAccount = null)
+    {
+        $options = [];
+        if ($connectedAccount) {
+            $options['stripe_account'] = $connectedAccount;
+        }
+
+        return $this->client->refunds->create([
+            'payment_intent' => $paymentIntent,
+        ], $options);
+    }
+
     public function createLink(string $accountId, string $returnUrl, string $refreshUrl)
     {
         return $this->client->accountLinks->create([
@@ -50,26 +60,6 @@ class StripeService implements IStripe
             'type'               => 'account_onboarding',
             'collection_options' => ['fields' => 'eventually_due'],
         ]);
-    }
-
-    public function createProduct(array $data = []): Product
-    {
-        return $this->client->products->create($data);
-    }
-
-    public function createPrice(array $data = []): Price
-    {
-        return $this->client->prices->create($data);
-    }
-
-    public function updateProduct(string $productId, array $data = []): Product
-    {
-        return $this->client->products->update($productId, $data);
-    }
-
-    public function updatePrice(string $priceId, array $data = []): Price
-    {
-        return $this->client->prices->update($priceId, $data);
     }
 
     public function getClient(): StripeClient
