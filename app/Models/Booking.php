@@ -37,23 +37,10 @@ class Booking extends Model
             'client_reference_id' => $this->id,
             'customer_email'      => $this->email,
             'payment_intent_data' => [
-                'application_fee_amount' => config('services.stripe.application_fee'),
+                'application_fee_amount' => config('stripe.fees.application_fee'),
                 'transfer_data'          => ['destination' => $this->event->client->stripe_account_id],
             ],
         ]);
-
-        // There are 2 ways of deciding how amounts are split between the platform and the client
-        // 1. This way the payout is done immediately and application_fee_amount is deducted from the payment and sent to the platform
-        //  'payment_intent_data' => [
-        //                'application_fee_amount' => config('stripe.fees.application_fee'),
-        //                'transfer_data'          => ['destination' => $this->event->client->stripe_account_id],
-        //            ],
-        // And another is
-//        'payment_intent_data' => [
-//                                'on_behalf_of'   => $this->event->client->stripe_account_id,
-//                                'transfer_group' => 'BANTIX-CLIENT#'.$this->event->client_id,
-//                            ],
-
 
         $this->update([
             'checkout_session_id' => $checkout_session->id,

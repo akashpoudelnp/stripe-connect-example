@@ -45,25 +45,6 @@ class EventBookingController extends Controller
         ]);
     }
 
-    public function success(Booking $booking)
-    {
-        if (!$booking->checkout_session_id) {
-            return redirect()->route('events.bookings.payment', $booking);
-        }
-
-        $checkout_session = Stripe::retrieveCheckoutSession($booking->checkout_session_id);
-
-        if ($checkout_session->payment_status !== 'paid') {
-            return redirect()->route('events.bookings.payment', $booking);
-        }
-
-        $booking->update([
-            'status' => 'completed'
-        ]);
-
-        return view('front.booking.success', compact('booking'));
-    }
-
     public function callback(Request $request)
     {
         $checkout_session_id = $request->query('checkout_session_id');
