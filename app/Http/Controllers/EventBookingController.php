@@ -23,6 +23,7 @@ class EventBookingController extends Controller
         ]);
 
         $data['unit_cost'] = $event->ticket_price;
+        $data['charge_type'] = config('stripe.charge_type');
 
         $booking = $event->bookings()->create($data);
 
@@ -51,7 +52,7 @@ class EventBookingController extends Controller
 
         $booking = Booking::where('checkout_session_id', $checkout_session_id)->firstOrFail();
 
-        if (config('stripe.charge_type') === 'direct') {
+        if ($booking->charge_type === 'direct') { // Direct Charges wants the connected account ID
             $checkout_session = Stripe::retrieveCheckoutSession($checkout_session_id, $booking->event->client->stripe_account_id);
         } else {
             $checkout_session = Stripe::retrieveCheckoutSession($checkout_session_id);
@@ -62,7 +63,8 @@ class EventBookingController extends Controller
         }
 
         $booking->update([
-            'status' => 'completed'
+            'status' => 'completed',
+            'payment_intent_id' => $checkout_session->payment_intent,
         ]);
 
         return view('front.booking.success', compact('booking'));

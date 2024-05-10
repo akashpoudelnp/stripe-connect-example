@@ -17,6 +17,8 @@ return new class extends Migration {
             $table->string('name');
             $table->string('status')->default('pending');
             $table->string('checkout_session_id')->nullable();
+            $table->string('payment_intent_id')->nullable();
+            $table->string('charge_type')->nullable();
             $table->timestamps();
         });
     }

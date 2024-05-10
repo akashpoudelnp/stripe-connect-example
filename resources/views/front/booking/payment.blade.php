@@ -9,7 +9,7 @@
     </div>
 
     <script>
-        const charge_type = @json(config('stripe.charge_type'));
+        const charge_type = @json($booking->charge_type);
         let stripe;
 
         if (charge_type === 'direct') {
